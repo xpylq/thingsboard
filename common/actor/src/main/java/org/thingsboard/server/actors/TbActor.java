@@ -17,22 +17,44 @@ package org.thingsboard.server.actors;
 
 import org.thingsboard.server.common.msg.TbActorMsg;
 
+/**
+ * actor核心接口
+ */
 public interface TbActor {
 
+
+    /**
+     * 处理消息
+     */
     boolean process(TbActorMsg msg);
 
+    /**
+     * 获取actor引用
+     */
     TbActorRef getActorRef();
 
+    /**
+     * 初始化actor
+     */
     default void init(TbActorCtx ctx) throws TbActorException {
     }
 
+    /**
+     * 销毁actor
+     */
     default void destroy() throws TbActorException {
     }
 
+    /**
+     * 定义actor初始化失败的策略
+     */
     default InitFailureStrategy onInitFailure(int attempt, Throwable t) {
         return InitFailureStrategy.retryWithDelay(5000 * attempt);
     }
 
+    /**
+     * 定义actor处理消息失败的策略
+     */
     default ProcessFailureStrategy onProcessFailure(Throwable t) {
         if (t instanceof Error) {
             return ProcessFailureStrategy.stop();

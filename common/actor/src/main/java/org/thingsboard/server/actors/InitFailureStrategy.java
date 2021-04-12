@@ -18,6 +18,9 @@ package org.thingsboard.server.actors;
 import lombok.Getter;
 import lombok.ToString;
 
+/**
+ * actor初始化失败策略
+ */
 @ToString
 public class InitFailureStrategy {
 

@@ -22,6 +22,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Predicate;
 
+/**
+ * actor系统核心接口
+ */
 public interface TbActorSystem {
 
     ScheduledExecutorService getScheduler();
@@ -42,6 +45,9 @@ public interface TbActorSystem {
 
     void stop(TbActorRef actorRef);
 
+    /**
+     * 根据actorId，停止actor
+     */
     void stop(TbActorId actorId);
 
     void stop();

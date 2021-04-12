@@ -20,6 +20,7 @@ import org.thingsboard.server.common.msg.queue.QueueToRuleEngineMsg;
 
 /**
  * Created by ashvayka on 15.03.18.
+ * 定义消息的类型
  */
 public enum MsgType {
 

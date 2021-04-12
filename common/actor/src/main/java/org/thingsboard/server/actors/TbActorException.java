@@ -15,6 +15,9 @@
  */
 package org.thingsboard.server.actors;
 
+/**
+ * actor统一异常类
+ */
 public class TbActorException extends Exception {
 
     public TbActorException(String message, Throwable cause) {

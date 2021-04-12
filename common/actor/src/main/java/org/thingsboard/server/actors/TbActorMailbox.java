@@ -26,9 +26,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+/**
+ * actor的消息邮箱，用于存放发送给该actor的消息
+ */
 @Slf4j
 @Data
 public final class TbActorMailbox implements TbActorCtx {
+
     private static final boolean HIGH_PRIORITY = true;
     private static final boolean NORMAL_PRIORITY = false;
 
@@ -38,22 +42,61 @@ public final class TbActorMailbox implements TbActorCtx {
     private static final boolean NOT_READY = false;
     private static final boolean READY = true;
 
+    /**
+     * ActorSystem引用
+     */
     private final TbActorSystem system;
+    /**
+     * ActorSystem配置引用
+     */
     private final TbActorSystemSettings settings;
+    /**
+     * actor id
+     */
     private final TbActorId selfId;
+    /**
+     * 父actor引用
+     */
     private final TbActorRef parentRef;
+    /**
+     * 当前对应actor对象
+     */
     private final TbActor actor;
+    /**
+     * 调度器
+     */
     private final Dispatcher dispatcher;
+    /**
+     * 消息队列(高优先级)
+     */
     private final ConcurrentLinkedQueue<TbActorMsg> highPriorityMsgs = new ConcurrentLinkedQueue<>();
+    /**
+     * 消息队列(普通优先级)
+     */
     private final ConcurrentLinkedQueue<TbActorMsg> normalPriorityMsgs = new ConcurrentLinkedQueue<>();
+    /**
+     * 繁忙标志
+     */
     private final AtomicBoolean busy = new AtomicBoolean(FREE);
+
+    /**
+     * 初始化标志
+     */
     private final AtomicBoolean ready = new AtomicBoolean(NOT_READY);
+
+    /**
+     * 销毁标志
+     */
     private final AtomicBoolean destroyInProgress = new AtomicBoolean();
 
     public void initActor() {
         dispatcher.getExecutor().execute(() -> tryInit(1));
     }
 
+    /**
+     * 执行actor初始化
+     * @param attempt 表明当前尝试次数
+     */
     private void tryInit(int attempt) {
         try {
             log.debug("[{}] Trying to init actor, attempt: {}", selfId, attempt);
@@ -67,15 +110,21 @@ public final class TbActorMailbox implements TbActorCtx {
         } catch (Throwable t) {
             log.debug("[{}] Failed to init actor, attempt: {}", selfId, attempt, t);
             int attemptIdx = attempt + 1;
+            // 获取init失败策略
             InitFailureStrategy strategy = actor.onInitFailure(attempt, t);
+            // 如果策略为停止 ||(actor全局最大重试次数>0 && 当前重试次数 > actor全局最大重试次数)，则停止该actor
             if (strategy.isStop() || (settings.getMaxActorInitAttempts() > 0 && attemptIdx > settings.getMaxActorInitAttempts())) {
                 log.info("[{}] Failed to init actor, attempt {}, going to stop attempts.", selfId, attempt, t);
                 system.stop(selfId);
             } else if (strategy.getRetryDelay() > 0) {
+                // 策略配置了延迟重试
                 log.info("[{}] Failed to init actor, attempt {}, going to retry in attempts in {}ms", selfId, attempt, strategy.getRetryDelay());
                 log.debug("[{}] Error", selfId, t);
-                system.getScheduler().schedule(() -> dispatcher.getExecutor().execute(() -> tryInit(attemptIdx)), strategy.getRetryDelay(), TimeUnit.MILLISECONDS);
+                // 延迟执行该actor初始化
+                system.getScheduler()
+                    .schedule(() -> dispatcher.getExecutor().execute(() -> tryInit(attemptIdx)), strategy.getRetryDelay(), TimeUnit.MILLISECONDS);
             } else {
+                // 立即重试该actor初始化
                 log.info("[{}] Failed to init actor, attempt {}, going to retry immediately", selfId, attempt);
                 log.debug("[{}] Error", selfId, t);
                 dispatcher.getExecutor().execute(() -> tryInit(attemptIdx));
@@ -83,15 +132,23 @@ public final class TbActorMailbox implements TbActorCtx {
         }
     }
 
+    /**
+     * 新消息进入消息队列
+     */
     private void enqueue(TbActorMsg msg, boolean highPriority) {
         if (highPriority) {
             highPriorityMsgs.add(msg);
         } else {
             normalPriorityMsgs.add(msg);
         }
+        // 尝试处理消息
         tryProcessQueue(true);
     }
 
+    /**
+     * 获取邮箱消息，交给调度器进行执行
+     * 保证一个actor中的消息，只会由一个线程获取，并执行actor处理逻辑
+     */
     private void tryProcessQueue(boolean newMsg) {
         if (ready.get() == READY) {
             if (newMsg || !highPriorityMsgs.isEmpty() || !normalPriorityMsgs.isEmpty()) {
@@ -111,16 +168,20 @@ public final class TbActorMailbox implements TbActorCtx {
     private void processMailbox() {
         boolean noMoreElements = false;
         for (int i = 0; i < settings.getActorThroughput(); i++) {
+            // 优先获取高优先级消息
             TbActorMsg msg = highPriorityMsgs.poll();
             if (msg == null) {
+                // 获取普通消息
                 msg = normalPriorityMsgs.poll();
             }
             if (msg != null) {
                 try {
                     log.debug("[{}] Going to process message: {}", selfId, msg);
+                    // actor处理消息
                     actor.process(msg);
                 } catch (Throwable t) {
                     log.debug("[{}] Failed to process message: {}", selfId, msg, t);
+                    // 获取处理失败策略
                     ProcessFailureStrategy strategy = actor.onProcessFailure(t);
                     if (strategy.isStop()) {
                         system.stop(selfId);
@@ -178,6 +239,7 @@ public final class TbActorMailbox implements TbActorCtx {
             return actorRef;
         }
     }
+
 
     public void destroy() {
         destroyInProgress.set(true);

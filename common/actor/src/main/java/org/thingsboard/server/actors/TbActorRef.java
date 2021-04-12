@@ -19,10 +19,19 @@ import org.thingsboard.server.common.msg.TbActorMsg;
 
 public interface TbActorRef {
 
+    /**
+     * 获取该actor的唯一识别标志
+     */
     TbActorId getActorId();
 
+    /**
+     * 发送消息给该actor
+     */
     void tell(TbActorMsg actorMsg);
 
+    /**
+     * 发送消息给该actor(高优先级)
+     */
     void tellWithHighPriority(TbActorMsg actorMsg);
 
 }

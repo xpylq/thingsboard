@@ -39,11 +39,26 @@ import java.util.stream.Collectors;
 @Data
 public class DefaultTbActorSystem implements TbActorSystem {
 
+    /**
+     * 维护调度器，<dispatcherId,Dispatcher>
+     */
     private final ConcurrentMap<String, Dispatcher> dispatchers = new ConcurrentHashMap<>();
+    /**
+     * 维护actor引用
+     */
     private final ConcurrentMap<TbActorId, TbActorMailbox> actors = new ConcurrentHashMap<>();
+    /**
+     * 维护actor锁，<actorId,可重入锁>
+     */
     private final ConcurrentMap<TbActorId, ReentrantLock> actorCreationLocks = new ConcurrentHashMap<>();
+    /**
+     * 维护actor父子关系
+     */
     private final ConcurrentMap<TbActorId, Set<TbActorId>> parentChildMap = new ConcurrentHashMap<>();
 
+    /**
+     * actor system全局配置
+     */
     @Getter
     private final TbActorSystemSettings settings;
     @Getter

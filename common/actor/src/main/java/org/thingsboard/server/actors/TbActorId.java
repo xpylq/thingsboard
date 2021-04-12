@@ -15,6 +15,9 @@
  */
 package org.thingsboard.server.actors;
 
+/**
+ * actor的唯一标志
+ */
 public interface TbActorId {
 
 }

@@ -19,10 +19,20 @@ import lombok.Data;
 
 import java.util.concurrent.ExecutorService;
 
+/**
+ * 调度器，指定一个线程池，负责实际处理actor逻辑
+ */
 @Data
 class Dispatcher {
 
+    /**
+     * 调度器id
+     */
     private final String dispatcherId;
+
+    /**
+     * 线程池
+     */
     private final ExecutorService executor;
 
 }

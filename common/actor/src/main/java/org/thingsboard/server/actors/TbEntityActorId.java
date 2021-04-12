@@ -36,8 +36,12 @@ public class TbEntityActorId implements TbActorId {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         TbEntityActorId that = (TbEntityActorId) o;
         return entityId.equals(that.entityId);
     }
