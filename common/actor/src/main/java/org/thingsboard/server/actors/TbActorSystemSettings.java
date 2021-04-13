@@ -24,11 +24,11 @@ import lombok.Data;
 public class TbActorSystemSettings {
 
     /**
-     * actor处理消息的吞吐量
+     * actor 单次执行处理消息的数量
      */
     private final int actorThroughput;
     /**
-     *
+     * actor system 调度线程池大小
      */
     private final int schedulerPoolSize;
     /**

@@ -61,6 +61,7 @@ public class DefaultTbActorSystem implements TbActorSystem {
      */
     @Getter
     private final TbActorSystemSettings settings;
+
     @Getter
     private final ScheduledExecutorService scheduler;
 
@@ -69,6 +70,9 @@ public class DefaultTbActorSystem implements TbActorSystem {
         this.scheduler = Executors.newScheduledThreadPool(settings.getSchedulerPoolSize(), ThingsBoardThreadFactory.forName("actor-system-scheduler"));
     }
 
+    /**
+     * 创建调度器
+     */
     @Override
     public void createDispatcher(String dispatcherId, ExecutorService executor) {
         Dispatcher current = dispatchers.putIfAbsent(dispatcherId, new Dispatcher(dispatcherId, executor));
@@ -77,6 +81,9 @@ public class DefaultTbActorSystem implements TbActorSystem {
         }
     }
 
+    /**
+     * 根据dispatcherId，销毁指定的调度器
+     */
     @Override
     public void destroyDispatcher(String dispatcherId) {
         Dispatcher dispatcher = dispatchers.remove(dispatcherId);
@@ -87,21 +94,33 @@ public class DefaultTbActorSystem implements TbActorSystem {
         }
     }
 
+    /**
+     * 根据actor id 获取指定
+     */
     @Override
     public TbActorRef getActor(TbActorId actorId) {
         return actors.get(actorId);
     }
 
+    /**
+     * 创建根actor
+     */
     @Override
     public TbActorRef createRootActor(String dispatcherId, TbActorCreator creator) {
         return createActor(dispatcherId, creator, null);
     }
 
+    /**
+     * 创建子actor
+     */
     @Override
     public TbActorRef createChildActor(String dispatcherId, TbActorCreator creator, TbActorId parent) {
         return createActor(dispatcherId, creator, parent);
     }
 
+    /**
+     * 创建actor
+     */
     private TbActorRef createActor(String dispatcherId, TbActorCreator creator, TbActorId parent) {
         Dispatcher dispatcher = dispatchers.get(dispatcherId);
         if (dispatcher == null) {
@@ -120,6 +139,7 @@ public class DefaultTbActorSystem implements TbActorSystem {
                 actorMailbox = actors.get(actorId);
                 if (actorMailbox == null) {
                     log.debug("Creating actor with id [{}]!", actorId);
+                    // 创建actor
                     TbActor actor = creator.createActor();
                     TbActorRef parentRef = null;
                     if (parent != null) {
@@ -128,8 +148,10 @@ public class DefaultTbActorSystem implements TbActorSystem {
                             throw new TbActorNotRegisteredException(parent, "Parent Actor with id [" + parent + "] is not registered!");
                         }
                     }
+                    // 封装TbActorMailbox对象
                     TbActorMailbox mailbox = new TbActorMailbox(this, settings, actorId, parentRef, actor, dispatcher);
                     actors.put(actorId, mailbox);
+                    // 初始化actor
                     mailbox.initActor();
                     actorMailbox = mailbox;
                     if (parent != null) {

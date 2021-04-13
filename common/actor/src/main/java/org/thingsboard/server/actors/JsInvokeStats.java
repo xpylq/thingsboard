@@ -16,6 +16,7 @@
 package org.thingsboard.server.actors;
 
 public interface JsInvokeStats {
+
     default void incrementRequests() {
         incrementRequests(1);
     }

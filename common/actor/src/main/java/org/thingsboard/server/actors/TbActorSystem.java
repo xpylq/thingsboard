@@ -39,22 +39,46 @@ public interface TbActorSystem {
 
     TbActorRef createChildActor(String dispatcherId, TbActorCreator creator, TbActorId parent);
 
+    /**
+     * 发送消息到指定actor（普通优先级）
+     */
     void tell(TbActorId target, TbActorMsg actorMsg);
 
+    /**
+     * 发送消息到指定actor（高优先级）
+     */
     void tellWithHighPriority(TbActorId target, TbActorMsg actorMsg);
 
+    /**
+     * 根据actorRef，停止该actor
+     */
     void stop(TbActorRef actorRef);
 
     /**
-     * 根据actorId，停止actor
+     * 根据actorId，停止该actor
      */
     void stop(TbActorId actorId);
 
+    /**
+     * 停止actor system
+     * 1. 关闭所有调度器
+     * 2. 关闭scheduler
+     * 3. 清空所有actor
+     */
     void stop();
 
+    /**
+     * 发送消息给指定actor的所有子actor（只包含一级子actor）
+     */
     void broadcastToChildren(TbActorId parent, TbActorMsg msg);
 
+    /**
+     * 发送消息给指定actor的所有符合条件的子actor（只包含一级子actor）
+     */
     void broadcastToChildren(TbActorId parent, Predicate<TbActorId> childFilter, TbActorMsg msg);
 
+    /**
+     * 根据条件，查询指定actor的所有子actor（只包含一级子actor）
+     */
     List<TbActorId> filterChildren(TbActorId parent, Predicate<TbActorId> childFilter);
 }
