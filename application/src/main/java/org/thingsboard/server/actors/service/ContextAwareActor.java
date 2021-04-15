@@ -48,6 +48,9 @@ public abstract class ContextAwareActor extends AbstractTbActor {
         return false;
     }
 
+    /**
+     * 处理消息的核心方法
+     */
     protected abstract boolean doProcess(TbActorMsg msg);
 
     @Override

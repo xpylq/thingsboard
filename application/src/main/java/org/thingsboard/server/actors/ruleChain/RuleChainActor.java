@@ -30,6 +30,9 @@ import org.thingsboard.server.common.msg.plugin.ComponentLifecycleMsg;
 import org.thingsboard.server.common.msg.queue.PartitionChangeMsg;
 import org.thingsboard.server.common.msg.queue.QueueToRuleEngineMsg;
 
+/**
+ * 规则链actor
+ */
 public class RuleChainActor extends ComponentActor<RuleChainId, RuleChainActorMessageProcessor> {
 
     private final RuleChain ruleChain;
@@ -41,8 +44,7 @@ public class RuleChainActor extends ComponentActor<RuleChainId, RuleChainActorMe
 
     @Override
     protected RuleChainActorMessageProcessor createProcessor(TbActorCtx ctx) {
-        return new RuleChainActorMessageProcessor(tenantId, ruleChain, systemContext,
-                ctx.getParentRef(), ctx);
+        return new RuleChainActorMessageProcessor(tenantId, ruleChain, systemContext, ctx.getParentRef(), ctx);
     }
 
     @Override

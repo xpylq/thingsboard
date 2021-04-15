@@ -44,6 +44,9 @@ public interface RuleChainService {
 
     RuleChainMetaData loadRuleChainMetaData(TenantId tenantId, RuleChainId ruleChainId);
 
+    /**
+     * 根据租户号和规则链ID，查询指定规则链
+     */
     RuleChain findRuleChainById(TenantId tenantId, RuleChainId ruleChainId);
 
     RuleNode findRuleNodeById(TenantId tenantId, RuleNodeId ruleNodeId);
@@ -60,6 +63,9 @@ public interface RuleChainService {
 
     List<EntityRelation> getRuleNodeRelations(TenantId tenantId, RuleNodeId ruleNodeId);
 
+    /**
+     * 根据租户号，查询所有规则链
+     */
     PageData<RuleChain> findTenantRuleChains(TenantId tenantId, PageLink pageLink);
 
     void deleteRuleChainById(TenantId tenantId, RuleChainId ruleChainId);

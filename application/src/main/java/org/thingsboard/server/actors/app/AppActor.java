@@ -47,12 +47,20 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * app actor
+ * 核心根actor
+ */
 @Slf4j
 public class AppActor extends ContextAwareActor {
 
     private final TbTenantProfileCache tenantProfileCache;
     private final TenantService tenantService;
     private final Set<TenantId> deletedTenants;
+
+    /**
+     * 规则链初始化标志
+     */
     private boolean ruleChainsInitialized;
 
     private AppActor(ActorSystemContext systemContext) {
@@ -65,6 +73,7 @@ public class AppActor extends ContextAwareActor {
     @Override
     protected boolean doProcess(TbActorMsg msg) {
         if (!ruleChainsInitialized) {
+            // 初始化租户actor
             initTenantActors();
             ruleChainsInitialized = true;
             if (msg.getMsgType() != MsgType.APP_INIT_MSG) {
@@ -99,6 +108,9 @@ public class AppActor extends ContextAwareActor {
         return true;
     }
 
+    /**
+     * 在app actor，初始化创建子的租户actor
+     */
     private void initTenantActors() {
         log.info("Starting main system actor.");
         try {
@@ -188,8 +200,8 @@ public class AppActor extends ContextAwareActor {
 
     private TbActorRef getOrCreateTenantActor(TenantId tenantId) {
         return ctx.getOrCreateChildActor(new TbEntityActorId(tenantId),
-                () -> DefaultActorService.TENANT_DISPATCHER_NAME,
-                () -> new TenantActor.ActorCreator(systemContext, tenantId));
+            () -> DefaultActorService.TENANT_DISPATCHER_NAME,
+            () -> new TenantActor.ActorCreator(systemContext, tenantId));
     }
 
     public static class ActorCreator extends ContextBasedCreator {

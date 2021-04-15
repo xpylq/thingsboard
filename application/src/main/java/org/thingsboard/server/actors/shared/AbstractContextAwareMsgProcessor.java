@@ -39,10 +39,16 @@ public abstract class AbstractContextAwareMsgProcessor {
         return systemContext.getScheduler();
     }
 
+    /**
+     * 固定频率发送消息到指定actor
+     */
     protected void schedulePeriodicMsgWithDelay(TbActorCtx ctx, TbActorMsg msg, long delayInMs, long periodInMs) {
         systemContext.schedulePeriodicMsgWithDelay(ctx, msg, delayInMs, periodInMs);
     }
 
+    /**
+     * 延迟发送消息到指定的actor
+     */
     protected void scheduleMsgWithDelay(TbActorCtx ctx, TbActorMsg msg, long delayInMs) {
         systemContext.scheduleMsgWithDelay(ctx, msg, delayInMs);
     }

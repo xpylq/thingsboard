@@ -17,6 +17,10 @@ package org.thingsboard.server.queue.settings;
 
 import lombok.Data;
 
+/**
+ * 规则引擎消息队列配置
+ * 默认包含如下几种
+ */
 @Data
 public class TbRuleEngineQueueConfiguration {
 

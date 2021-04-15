@@ -31,6 +31,9 @@ public enum MsgType {
      */
     PARTITION_CHANGE_MSG,
 
+    /**
+     * app actor初始化
+     */
     APP_INIT_MSG,
 
     /**

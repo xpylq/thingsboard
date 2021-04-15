@@ -326,7 +326,7 @@ public class ActorSystemContext {
         if (statisticsEnabled) {
             if (jsInvokeStats.getRequests() > 0 || jsInvokeStats.getResponses() > 0 || jsInvokeStats.getFailures() > 0) {
                 log.info("Rule Engine JS Invoke Stats: requests [{}] responses [{}] failures [{}]",
-                        jsInvokeStats.getRequests(), jsInvokeStats.getResponses(), jsInvokeStats.getFailures());
+                    jsInvokeStats.getRequests(), jsInvokeStats.getResponses(), jsInvokeStats.getFailures());
                 jsInvokeStats.reset();
             }
         }
@@ -470,16 +470,16 @@ public class ActorSystemContext {
                 String metadata = mapper.writeValueAsString(tbMsg.getMetaData().getData());
 
                 ObjectNode node = mapper.createObjectNode()
-                        .put("type", type)
-                        .put("server", getServiceId())
-                        .put("entityId", tbMsg.getOriginator().getId().toString())
-                        .put("entityName", tbMsg.getOriginator().getEntityType().name())
-                        .put("msgId", tbMsg.getId().toString())
-                        .put("msgType", tbMsg.getType())
-                        .put("dataType", tbMsg.getDataType().name())
-                        .put("relationType", relationType)
-                        .put("data", tbMsg.getData())
-                        .put("metadata", metadata);
+                    .put("type", type)
+                    .put("server", getServiceId())
+                    .put("entityId", tbMsg.getOriginator().getId().toString())
+                    .put("entityName", tbMsg.getOriginator().getEntityType().name())
+                    .put("msgId", tbMsg.getId().toString())
+                    .put("msgType", tbMsg.getType())
+                    .put("dataType", tbMsg.getDataType().name())
+                    .put("relationType", relationType)
+                    .put("data", tbMsg.getData())
+                    .put("metadata", metadata);
 
                 if (error != null) {
                     node = node.put("error", toString(error));
@@ -507,7 +507,7 @@ public class ActorSystemContext {
     private boolean checkLimits(TenantId tenantId, TbMsg tbMsg, Throwable error) {
         if (debugPerTenantEnabled) {
             DebugTbRateLimits debugTbRateLimits = debugPerTenantLimits.computeIfAbsent(tenantId, id ->
-                    new DebugTbRateLimits(new TbRateLimits(debugPerTenantLimitsConfiguration), false));
+                new DebugTbRateLimits(new TbRateLimits(debugPerTenantLimitsConfiguration), false));
 
             if (!debugTbRateLimits.getTbRateLimits().tryConsume()) {
                 if (!debugTbRateLimits.isRuleChainEventSaved()) {
@@ -530,9 +530,9 @@ public class ActorSystemContext {
         event.setType(DataConstants.DEBUG_RULE_CHAIN);
 
         ObjectNode node = mapper.createObjectNode()
-                //todo: what fields are needed here?
-                .put("server", getServiceId())
-                .put("message", "Reached debug mode rate limit!");
+            //todo: what fields are needed here?
+            .put("server", getServiceId())
+            .put("message", "Reached debug mode rate limit!");
 
         if (error != null) {
             node = node.put("error", toString(error));
@@ -565,11 +565,21 @@ public class ActorSystemContext {
         appActor.tellWithHighPriority(tbActorMsg);
     }
 
+    /**
+     * 固定频率发送消息到指定actor
+     * @param ctx 发送给的actor
+     * @param msg 发送的消息
+     * @param delayInMs 发送延迟，单位毫秒
+     * @param periodInMs 间隔时间，单位毫秒
+     */
     public void schedulePeriodicMsgWithDelay(TbActorRef ctx, TbActorMsg msg, long delayInMs, long periodInMs) {
         log.debug("Scheduling periodic msg {} every {} ms with delay {} ms", msg, periodInMs, delayInMs);
         getScheduler().scheduleWithFixedDelay(() -> ctx.tell(msg), delayInMs, periodInMs, TimeUnit.MILLISECONDS);
     }
 
+    /**
+     * 延迟发送消息到指定的actor
+     */
     public void scheduleMsgWithDelay(TbActorRef ctx, TbActorMsg msg, long delayInMs) {
         log.debug("Scheduling msg {} with delay {} ms", msg, delayInMs);
         if (delayInMs > 0) {

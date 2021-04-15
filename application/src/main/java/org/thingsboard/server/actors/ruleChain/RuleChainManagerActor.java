@@ -55,6 +55,7 @@ public abstract class RuleChainManagerActor extends ContextAwareActor {
     }
 
     protected void initRuleChains() {
+        // 根据租户号查询规则链
         for (RuleChain ruleChain : new PageDataIterable<>(link -> ruleChainService.findTenantRuleChains(tenantId, link), ContextAwareActor.ENTITY_PACK_LIMIT)) {
             RuleChainId ruleChainId = ruleChain.getId();
             log.debug("[{}|{}] Creating rule chain actor", ruleChainId.getEntityType(), ruleChain.getId());
@@ -83,11 +84,12 @@ public abstract class RuleChainManagerActor extends ContextAwareActor {
 
     protected TbActorRef getOrCreateActor(RuleChainId ruleChainId, Function<RuleChainId, RuleChain> provider) {
         return ctx.getOrCreateChildActor(new TbEntityActorId(ruleChainId),
-                () -> DefaultActorService.RULE_DISPATCHER_NAME,
-                () -> {
-                    RuleChain ruleChain = provider.apply(ruleChainId);
-                    return new RuleChainActor.ActorCreator(systemContext, tenantId, ruleChain);
-                });
+            () -> DefaultActorService.RULE_DISPATCHER_NAME,
+            () -> {
+                // 根据租户号和规则链ID，查询规则链
+                RuleChain ruleChain = provider.apply(ruleChainId);
+                return new RuleChainActor.ActorCreator(systemContext, tenantId, ruleChain);
+            });
     }
 
     protected TbActorRef getEntityActorRef(EntityId entityId) {

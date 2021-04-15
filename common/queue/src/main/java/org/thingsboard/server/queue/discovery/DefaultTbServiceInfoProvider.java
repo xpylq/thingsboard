@@ -58,7 +58,9 @@ public class DefaultTbServiceInfoProvider implements TbServiceInfoProvider {
     private TbQueueRuleEngineSettings ruleEngineSettings;
 
     private List<ServiceType> serviceTypes;
+
     private ServiceInfo serviceInfo;
+
     private TenantId isolatedTenant;
 
     @PostConstruct
@@ -71,14 +73,17 @@ public class DefaultTbServiceInfoProvider implements TbServiceInfoProvider {
             }
         }
         log.info("Current Service ID: {}", serviceId);
+        // serviceType默认为monolith
         if (serviceType.equalsIgnoreCase("monolith")) {
+            // serviceTypes=[TB_CORE,TB_RULE_ENGINE,TB_TRANSPORT,JS_EXECUTOR]
             serviceTypes = Collections.unmodifiableList(Arrays.asList(ServiceType.values()));
         } else {
             serviceTypes = Collections.singletonList(ServiceType.of(serviceType));
         }
+
         ServiceInfo.Builder builder = ServiceInfo.newBuilder()
-                .setServiceId(serviceId)
-                .addAllServiceTypes(serviceTypes.stream().map(ServiceType::name).collect(Collectors.toList()));
+            .setServiceId(serviceId)
+            .addAllServiceTypes(serviceTypes.stream().map(ServiceType::name).collect(Collectors.toList()));
         UUID tenantId;
         if (!StringUtils.isEmpty(tenantIdStr)) {
             tenantId = UUID.fromString(tenantIdStr);
@@ -88,13 +93,13 @@ public class DefaultTbServiceInfoProvider implements TbServiceInfoProvider {
         }
         builder.setTenantIdMSB(tenantId.getMostSignificantBits());
         builder.setTenantIdLSB(tenantId.getLeastSignificantBits());
-
+        //规则引擎队列配置
         if (serviceTypes.contains(ServiceType.TB_RULE_ENGINE) && ruleEngineSettings != null) {
             for (TbRuleEngineQueueConfiguration queue : ruleEngineSettings.getQueues()) {
                 TransportProtos.QueueInfo queueInfo = TransportProtos.QueueInfo.newBuilder()
-                        .setName(queue.getName())
-                        .setTopic(queue.getTopic())
-                        .setPartitions(queue.getPartitions()).build();
+                    .setName(queue.getName())
+                    .setTopic(queue.getTopic())
+                    .setPartitions(queue.getPartitions()).build();
                 builder.addRuleEngineQueues(queueInfo);
             }
         }

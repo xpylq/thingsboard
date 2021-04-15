@@ -41,6 +41,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
+/**
+ * 创建actor system
+ */
 @Service
 @Slf4j
 public class DefaultActorService implements ActorService {
@@ -91,15 +94,16 @@ public class DefaultActorService implements ActorService {
         system.createDispatcher(RULE_DISPATCHER_NAME, initDispatcherExecutor(RULE_DISPATCHER_NAME, ruleDispatcherSize));
 
         actorContext.setActorSystem(system);
-
+        // 创建AppActor
         appActor = system.createRootActor(APP_DISPATCHER_NAME, new AppActor.ActorCreator(actorContext));
         actorContext.setAppActor(appActor);
-
+        // 创建StatsActor
         TbActorRef statsActor = system.createRootActor(TENANT_DISPATCHER_NAME, new StatsActor.ActorCreator(actorContext, "StatsActor"));
         actorContext.setStatsActor(statsActor);
 
         log.info("Actor system initialized.");
     }
+
 
     private ExecutorService initDispatcherExecutor(String dispatcherName, int poolSize) {
         if (poolSize == 0) {
@@ -120,6 +124,9 @@ public class DefaultActorService implements ActorService {
         appActor.tellWithHighPriority(new AppInitMsg());
     }
 
+    /**
+     * todo: 稍后看
+     */
     @EventListener(PartitionChangeEvent.class)
     public void onApplicationEvent(PartitionChangeEvent partitionChangeEvent) {
         log.info("Received partition change event.");

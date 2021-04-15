@@ -57,7 +57,9 @@ import java.util.Optional;
 public class TenantActor extends RuleChainManagerActor {
 
     private boolean isRuleEngineForCurrentTenant;
+
     private boolean isCore;
+
     private ApiUsageState apiUsageState;
 
     private TenantActor(ActorSystemContext systemContext, TenantId tenantId) {
@@ -71,20 +73,25 @@ public class TenantActor extends RuleChainManagerActor {
         super.init(ctx);
         log.info("[{}] Starting tenant actor.", tenantId);
         try {
+            // 获取租户信息
             Tenant tenant = systemContext.getTenantService().findTenantById(tenantId);
             if (tenant == null) {
                 cantFindTenant = true;
                 log.info("[{}] Started tenant actor for missing tenant.", tenantId);
             } else {
+                // 查询租户API使用权限
                 apiUsageState = new ApiUsageState(systemContext.getApiUsageStateService().getApiUsageState(tenant.getId()));
 
                 // This Service may be started for specific tenant only.
                 Optional<TenantId> isolatedTenantId = systemContext.getServiceInfoProvider().getIsolatedTenant();
 
+                // 获取租户详细信息
                 TenantProfile tenantProfile = systemContext.getTenantProfileCache().get(tenant.getTenantProfileId());
 
                 isCore = systemContext.getServiceInfoProvider().isService(ServiceType.TB_CORE);
+
                 isRuleEngineForCurrentTenant = systemContext.getServiceInfoProvider().isService(ServiceType.TB_RULE_ENGINE);
+
                 if (isRuleEngineForCurrentTenant) {
                     try {
                         if (isolatedTenantId.map(id -> id.equals(tenantId)).orElseGet(() -> !tenantProfile.isIsolatedTbRuleEngine())) {
@@ -236,7 +243,7 @@ public class TenantActor extends RuleChainManagerActor {
             if (target != null) {
                 if (msg.getEntityId().getEntityType() == EntityType.RULE_CHAIN) {
                     RuleChain ruleChain = systemContext.getRuleChainService().
-                            findRuleChainById(tenantId, new RuleChainId(msg.getEntityId().getId()));
+                        findRuleChainById(tenantId, new RuleChainId(msg.getEntityId().getId()));
                     visit(ruleChain, target);
                 }
                 target.tellWithHighPriority(msg);
@@ -248,8 +255,8 @@ public class TenantActor extends RuleChainManagerActor {
 
     private TbActorRef getOrCreateDeviceActor(DeviceId deviceId) {
         return ctx.getOrCreateChildActor(new TbEntityActorId(deviceId),
-                () -> DefaultActorService.DEVICE_DISPATCHER_NAME,
-                () -> new DeviceActorCreator(systemContext, tenantId, deviceId));
+            () -> DefaultActorService.DEVICE_DISPATCHER_NAME,
+            () -> new DeviceActorCreator(systemContext, tenantId, deviceId));
     }
 
     public static class ActorCreator extends ContextBasedCreator {
